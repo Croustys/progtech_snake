@@ -2,6 +2,7 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import javax.swing.*;
 import java.util.LinkedList;
+import java.util.List;
 
 public class Snake {
     private final LinkedList<Point> body;
@@ -84,4 +85,13 @@ public class Snake {
         }
     }
 
+    public boolean collidesWithRock(List<Point> rocks) {
+        Point head = getHead();
+        for (Point rock : rocks) {
+            if (head.equals(rock)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

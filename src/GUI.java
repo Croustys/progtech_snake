@@ -6,16 +6,22 @@ import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class GUI extends JFrame {
     public static final int TILE_SIZE = 30;
     public static final int GRID_SIZE = 30;
+    private final int ROCK_COUNT = 15;
 
     private final Snake snake;
     private Point food;
+    private final List<Point> rocks;
     private BufferedImage bufferImage;
-    private BufferedImage foodImage;
+    private ImageIcon rockIcon;
+    private ImageIcon foodIcon;
+    private ImageIcon desertImage;
 
     public GUI() {
         setTitle("Snake Game");
@@ -24,18 +30,18 @@ public class GUI extends JFrame {
         setResizable(false);
 
         this.snake = new Snake();
+        this.rocks = new ArrayList<>();
         try {
-            // Load the food image
-            URL imageUrl = getClass().getResource("food.jpg");  // Assuming food.png is in the same directory as your class
-            if (imageUrl != null) {
-                foodImage = ImageIO.read(imageUrl);
-            } else {
-                throw new IOException("Image not found");
-            }
-        } catch (IOException e) {
+            foodIcon = new ImageIcon("media/food.jpg");
+
+            rockIcon  = new ImageIcon("media/rock.jpg");
+
+            desertImage = new ImageIcon("media/desert.png");
+        } catch (Exception e) {
             e.printStackTrace();
         }
         spawnFood();
+        spawnRocks();
         bufferImage = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
 
         Timer timer = new Timer(200, e -> {
@@ -70,16 +76,38 @@ public class GUI extends JFrame {
         do {
             x = random.nextInt(GRID_SIZE);
             y = random.nextInt(GRID_SIZE);
-        } while (snake.contains(x, y));
+        } while (snake.contains(x, y) || rockExists(x, y));
 
         food = new Point(x, y);
+    }
+
+    private void spawnRocks() {
+        Random random = new Random();
+        for (int i = 0; i < ROCK_COUNT; i++) {
+            int x, y;
+            do {
+                x = random.nextInt(GRID_SIZE);
+                y = random.nextInt(GRID_SIZE);
+            } while (snake.contains(x, y) || rockExists(x, y) || food.equals(new Point(x, y)));
+
+            rocks.add(new Point(x, y));
+        }
+    }
+
+    private boolean rockExists(int x, int y) {
+        for (Point rock : rocks) {
+            if (rock.equals(new Point(x, y))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void checkCollision() {
         if (snake.getHead().equals(food)) {
             snake.grow();
             spawnFood();
-        } else if (snake.collidesWithSelf() || snake.isOutOfBounds()) {
+        } else if (snake.collidesWithSelf() || snake.isOutOfBounds() || snake.collidesWithRock(rocks)) {
             JOptionPane.showMessageDialog(this, "Game Over", "Game Over", JOptionPane.INFORMATION_MESSAGE);
             System.exit(0);
         }
@@ -90,12 +118,18 @@ public class GUI extends JFrame {
         Graphics bufferGraphics = bufferImage.getGraphics();
         bufferGraphics.clearRect(0, 0, getWidth(), getHeight());
 
+        // Draw the desert background image
+        bufferGraphics.drawImage(desertImage.getImage(), 0, 0, getWidth(), getHeight(), this);
         snake.draw(bufferGraphics);
 
         // Draw the food image
-        bufferGraphics.drawImage(foodImage, food.x * TILE_SIZE, food.y * TILE_SIZE, TILE_SIZE, TILE_SIZE, this);
+        bufferGraphics.drawImage(foodIcon.getImage(), food.x * TILE_SIZE, food.y * TILE_SIZE, TILE_SIZE, TILE_SIZE, this);
+
+        // Draw the rocks
+        for (Point rock : rocks) {
+            bufferGraphics.drawImage(rockIcon.getImage(), rock.x * TILE_SIZE, rock.y * TILE_SIZE, TILE_SIZE, TILE_SIZE, this);
+        }
 
         g.drawImage(bufferImage, 0, 0, this);
     }
-
 }
