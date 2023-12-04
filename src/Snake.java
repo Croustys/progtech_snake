@@ -85,7 +85,7 @@ public class Snake {
         }
     }
 
-    public boolean collidesWithRock(List<Point> rocks) {
+    public boolean collidesWithRock(List<Rock> rocks) {
         Point head = getHead();
         for (Point rock : rocks) {
             if (head.equals(rock)) {
@@ -93,5 +93,12 @@ public class Snake {
             }
         }
         return false;
+    }
+
+    public void reset() {
+        body.clear();
+        body.add(new Point(GUI.GRID_SIZE / 2, GUI.GRID_SIZE / 2));
+        body.add(new Point((GUI.GRID_SIZE / 2) - 1, GUI.GRID_SIZE / 2));
+        direction = KeyEvent.VK_D;
     }
 }

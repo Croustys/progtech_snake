@@ -1,11 +1,11 @@
-import javax.imageio.ImageIO;
+import db.Database;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.net.URL;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -14,17 +14,17 @@ public class GUI extends JFrame {
     public static final int TILE_SIZE = 30;
     public static final int GRID_SIZE = 30;
     private final int ROCK_COUNT = 15;
-
     private final Snake snake;
-    private Point food;
-    private final List<Point> rocks;
-    private BufferedImage bufferImage;
+    private Food food;
+    private final List<Rock> rocks;
+    private final BufferedImage bufferImage;
     private ImageIcon rockIcon;
     private ImageIcon foodIcon;
     private ImageIcon desertImage;
+    private int score = 0;
 
     public GUI() {
-        setTitle("Snake Game");
+        setTitle("Snake");
         setSize(TILE_SIZE * GRID_SIZE, TILE_SIZE * GRID_SIZE);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
@@ -33,9 +33,7 @@ public class GUI extends JFrame {
         this.rocks = new ArrayList<>();
         try {
             foodIcon = new ImageIcon("media/food.jpg");
-
             rockIcon  = new ImageIcon("media/rock.jpg");
-
             desertImage = new ImageIcon("media/desert.png");
         } catch (Exception e) {
             e.printStackTrace();
@@ -78,7 +76,7 @@ public class GUI extends JFrame {
             y = random.nextInt(GRID_SIZE);
         } while (snake.contains(x, y) || rockExists(x, y));
 
-        food = new Point(x, y);
+        food = new Food(x, y);
     }
 
     private void spawnRocks() {
@@ -90,7 +88,7 @@ public class GUI extends JFrame {
                 y = random.nextInt(GRID_SIZE);
             } while (snake.contains(x, y) || rockExists(x, y) || food.equals(new Point(x, y)));
 
-            rocks.add(new Point(x, y));
+            rocks.add(new Rock(x, y));
         }
     }
 
@@ -107,10 +105,47 @@ public class GUI extends JFrame {
         if (snake.getHead().equals(food)) {
             snake.grow();
             spawnFood();
+            score++;
         } else if (snake.collidesWithSelf() || snake.isOutOfBounds() || snake.collidesWithRock(rocks)) {
-            JOptionPane.showMessageDialog(this, "Game Over", "Game Over", JOptionPane.INFORMATION_MESSAGE);
+            handleGameOver();
+        }
+    }
+
+    private void handleGameOver() {
+        String playerName = JOptionPane.showInputDialog(this, "Game Over\nYour Score: " + score + "\nEnter your name:");
+        if (playerName != null && !playerName.trim().isEmpty()) {
+            try {
+                Database database = Database.instance();
+                database.insertScore(playerName, score);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        int option = JOptionPane.showOptionDialog(
+                this,
+                "Do you want to play again?",
+                "Game Over",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                null,
+                null
+        );
+
+        if (option == JOptionPane.YES_OPTION) {
+            restartGame();
+        } else {
             System.exit(0);
         }
+    }
+
+    private void restartGame() {
+        snake.reset();
+        rocks.clear();
+        spawnFood();
+        spawnRocks();
+        score = 0;
     }
 
     @Override
