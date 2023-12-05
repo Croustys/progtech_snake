@@ -2,6 +2,8 @@ package db;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /** Singleton. Class responsible for connecting to the database and making queries. */
 public class Database {
@@ -38,17 +40,17 @@ public class Database {
      */
     public void insertScore(String playerName, final int hs) throws SQLException {
         try {
-            PreparedStatement selectPlayerID = this.connection.prepareStatement("SELECT id FROM highscores WHERE name = ?");
+            PreparedStatement selectPlayerID = this.connection.prepareStatement("SELECT id, score FROM highscores WHERE name = ?");
             selectPlayerID.setString(1, playerName);
 
             ResultSet resultSet = selectPlayerID.executeQuery();
-
             if (resultSet.next()) {
                 int id = resultSet.getInt(1);
-                PreparedStatement updateRecord = this.connection.prepareStatement("UPDATE highscores SET score = ? WHERE id = ?");
-                updateRecord.setInt(1, hs);
-                updateRecord.setInt(2, id);
-                updateRecord.executeUpdate();
+                int existingScore = resultSet.getInt(2);
+
+                if (hs > existingScore) {
+                    updateScore(id, hs);
+                }
             } else {
                 PreparedStatement insertRecord = this.connection.prepareStatement("INSERT INTO highscores (name, score) VALUES (?, ?)");
                 insertRecord.setString(1, playerName);
@@ -58,7 +60,7 @@ public class Database {
 
             this.connection.commit();
         } catch (SQLException e) {
-            e.printStackTrace();
+            Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, e);
         }
     }
 
@@ -77,5 +79,21 @@ public class Database {
         }
 
         return topScores;
+    }
+
+    /**
+     * @param id id of the already existing player
+     * @param hs new highscore to be updated for the user
+     * @throws SQLException if updating the database caught an error
+     */
+    private void updateScore(final int id, final int hs) throws SQLException {
+        try {
+            PreparedStatement updateRecord = this.connection.prepareStatement("UPDATE highscores SET score = ? WHERE id = ?");
+            updateRecord.setInt(1, hs);
+            updateRecord.setInt(2, id);
+            updateRecord.executeUpdate();
+        }catch (SQLException e) {
+            Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, e);
+        }
     }
 }

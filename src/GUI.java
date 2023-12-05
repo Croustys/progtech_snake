@@ -9,6 +9,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class GUI extends JFrame {
     public static final int TILE_SIZE = 30;
@@ -23,6 +25,8 @@ public class GUI extends JFrame {
     private int score = 0;
     private int elapsedSeconds = 0;
     private final GamePanel gamePanel;
+    private final Timer timer;
+    private final Timer gameTimer;
 
     public GUI() {
         setTitle("Snake");
@@ -38,16 +42,14 @@ public class GUI extends JFrame {
             rockIcon  = new ImageIcon("media/rock.jpg");
             desertImage = new ImageIcon("media/desert.png");
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, e);
         }
 
         spawnFood();
         spawnRocks();
 
-        Timer gameTimer = new Timer(1000, e -> {
-            elapsedSeconds++;
-        });
-        Timer timer = new Timer(200, e -> {
+        gameTimer = new Timer(1000, e -> elapsedSeconds++);
+        timer = new Timer(200, e -> {
             snake.move();
             checkCollision();
             gamePanel.repaint();
@@ -75,17 +77,45 @@ public class GUI extends JFrame {
     }
 
     private void displayHighscores() {
+        timer.stop();
+        gameTimer.stop();
         try {
             Database database = Database.instance();
             List<Highscore> highscores = database.getTopScores();
-            StringBuilder message = new StringBuilder("Highscores:\n");
-            for (int i = 0; i < highscores.size(); i++) {
-                message.append(i + 1).append(". ").append(highscores.get(i)).append("\n");
-            }
-            JOptionPane.showMessageDialog(this, message.toString(), "Highscores", JOptionPane.INFORMATION_MESSAGE);
+
+            JFrame highScoresFrame = new JFrame("Highscores");
+
+            HighScoreMenu highScoresPanel = new HighScoreMenu(highscores, this);
+            JScrollPane scrollPane = new JScrollPane(highScoresPanel);
+
+            highScoresFrame.add(scrollPane);
+            highScoresFrame.setSize(700, 700);
+            highScoresFrame.setLocationRelativeTo(this);
+
+            highScoresFrame.setVisible(true);
+
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
             JOptionPane.showMessageDialog(this, "Error fetching highscores.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    public void openRestartDialog() {
+        int option = JOptionPane.showOptionDialog(
+                this,
+                "Do you want to play again?",
+                "Game Over",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                null,
+                null
+        );
+
+        if (option == JOptionPane.YES_OPTION) {
+            restartGame();
+        } else {
+            System.exit(0);
         }
     }
 
@@ -139,27 +169,10 @@ public class GUI extends JFrame {
                 Database database = Database.instance();
                 database.insertScore(playerName, score);
             } catch (SQLException e) {
-                e.printStackTrace();
+                Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, e);
             }
         }
         this.displayHighscores();
-
-        int option = JOptionPane.showOptionDialog(
-                this,
-                "Do you want to play again?",
-                "Game Over",
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.QUESTION_MESSAGE,
-                null,
-                null,
-                null
-        );
-
-        if (option == JOptionPane.YES_OPTION) {
-            restartGame();
-        } else {
-            System.exit(0);
-        }
     }
 
     private void restartGame() {
@@ -169,6 +182,8 @@ public class GUI extends JFrame {
         spawnFood();
         spawnRocks();
         score = 0;
+        timer.start();
+        gameTimer.start();
     }
 
     private class GamePanel extends JPanel {
@@ -192,6 +207,7 @@ public class GUI extends JFrame {
             g.setColor(Color.WHITE);
             g.setFont(new Font("Arial", Font.PLAIN, 20));
             g.drawString("Time: " + elapsedSeconds + "s", 10, 20);
+            g.drawString("Points: " + score, 10, 40);
         }
     }
 }

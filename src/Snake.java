@@ -3,6 +3,8 @@ import java.awt.event.KeyEvent;
 import javax.swing.*;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Snake {
     private final LinkedList<Point> body;
@@ -17,13 +19,11 @@ public class Snake {
         direction = KeyEvent.VK_D;
 
         try {
-            // Load the snake head image
             headIcon = new ImageIcon("media/snake.jpg");
 
-            // Load the snake body image
             bodyIcon = new ImageIcon("media/snake_body.jpg");
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.getLogger(Snake.class.getName()).log(Level.SEVERE, null, e);
         }
     }
 
@@ -75,10 +75,8 @@ public class Snake {
     }
 
     public void draw(Graphics g) {
-        // Draw the snake head image
         g.drawImage(headIcon.getImage(), getHead().x * GUI.TILE_SIZE, getHead().y * GUI.TILE_SIZE, GUI.TILE_SIZE, GUI.TILE_SIZE, null);
 
-        // Draw the rest of the snake body using the body image
         for (int i = 1; i < body.size(); i++) {
             Point segment = body.get(i);
             g.drawImage(bodyIcon.getImage(), segment.x * GUI.TILE_SIZE, segment.y * GUI.TILE_SIZE, GUI.TILE_SIZE, GUI.TILE_SIZE, null);
