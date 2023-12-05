@@ -1,10 +1,10 @@
 import db.Database;
+import db.Highscore;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.image.BufferedImage;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,23 +14,25 @@ public class GUI extends JFrame {
     public static final int TILE_SIZE = 30;
     public static final int GRID_SIZE = 30;
     private final int ROCK_COUNT = 15;
-    private final Snake snake;
+    private final Snake snake = new Snake();
     private Food food;
-    private final List<Rock> rocks;
-    private final BufferedImage bufferImage;
+    private final List<Rock> rocks = new ArrayList<>();
     private ImageIcon rockIcon;
     private ImageIcon foodIcon;
     private ImageIcon desertImage;
     private int score = 0;
+    private int elapsedSeconds = 0;
+    private final GamePanel gamePanel;
 
     public GUI() {
         setTitle("Snake");
-        setSize(TILE_SIZE * GRID_SIZE, TILE_SIZE * GRID_SIZE);
+        setSize(TILE_SIZE * GRID_SIZE + 50, TILE_SIZE * GRID_SIZE + 50);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
 
-        this.snake = new Snake();
-        this.rocks = new ArrayList<>();
+        gamePanel = new GamePanel();
+        setContentPane(gamePanel);
+
         try {
             foodIcon = new ImageIcon("media/food.jpg");
             rockIcon  = new ImageIcon("media/rock.jpg");
@@ -38,15 +40,19 @@ public class GUI extends JFrame {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         spawnFood();
         spawnRocks();
-        bufferImage = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
 
+        Timer gameTimer = new Timer(1000, e -> {
+            elapsedSeconds++;
+        });
         Timer timer = new Timer(200, e -> {
             snake.move();
             checkCollision();
-            repaint();
+            gamePanel.repaint();
         });
+        gameTimer.start();
         timer.start();
 
         addKeyListener(new KeyListener() {
@@ -66,6 +72,21 @@ public class GUI extends JFrame {
 
         setFocusable(true);
         requestFocus();
+    }
+
+    private void displayHighscores() {
+        try {
+            Database database = Database.instance();
+            List<Highscore> highscores = database.getTopScores();
+            StringBuilder message = new StringBuilder("Highscores:\n");
+            for (int i = 0; i < highscores.size(); i++) {
+                message.append(i + 1).append(". ").append(highscores.get(i)).append("\n");
+            }
+            JOptionPane.showMessageDialog(this, message.toString(), "Highscores", JOptionPane.INFORMATION_MESSAGE);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error fetching highscores.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void spawnFood() {
@@ -121,6 +142,7 @@ public class GUI extends JFrame {
                 e.printStackTrace();
             }
         }
+        this.displayHighscores();
 
         int option = JOptionPane.showOptionDialog(
                 this,
@@ -141,6 +163,7 @@ public class GUI extends JFrame {
     }
 
     private void restartGame() {
+        elapsedSeconds = 0;
         snake.reset();
         rocks.clear();
         spawnFood();
@@ -148,23 +171,27 @@ public class GUI extends JFrame {
         score = 0;
     }
 
-    @Override
-    public void paint(Graphics g) {
-        Graphics bufferGraphics = bufferImage.getGraphics();
-        bufferGraphics.clearRect(0, 0, getWidth(), getHeight());
+    private class GamePanel extends JPanel {
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
 
-        // Draw the desert background image
-        bufferGraphics.drawImage(desertImage.getImage(), 0, 0, getWidth(), getHeight(), this);
-        snake.draw(bufferGraphics);
+            // Draw the desert background image
+            g.drawImage(desertImage.getImage(), 0, 0, getWidth(), getHeight(), this);
+            snake.draw(g);
 
-        // Draw the food image
-        bufferGraphics.drawImage(foodIcon.getImage(), food.x * TILE_SIZE, food.y * TILE_SIZE, TILE_SIZE, TILE_SIZE, this);
+            // Draw the food image
+            g.drawImage(foodIcon.getImage(), food.x * TILE_SIZE, food.y * TILE_SIZE, TILE_SIZE, TILE_SIZE, this);
 
-        // Draw the rocks
-        for (Point rock : rocks) {
-            bufferGraphics.drawImage(rockIcon.getImage(), rock.x * TILE_SIZE, rock.y * TILE_SIZE, TILE_SIZE, TILE_SIZE, this);
+            // Draw the rocks
+            for (Point rock : rocks) {
+                g.drawImage(rockIcon.getImage(), rock.x * TILE_SIZE, rock.y * TILE_SIZE, TILE_SIZE, TILE_SIZE, this);
+            }
+
+            // Draw the elapsed time on the screen
+            g.setColor(Color.WHITE);
+            g.setFont(new Font("Arial", Font.PLAIN, 20));
+            g.drawString("Time: " + elapsedSeconds + "s", 10, 20);
         }
-
-        g.drawImage(bufferImage, 0, 0, this);
     }
 }
