@@ -1,3 +1,4 @@
+import Sprites.*;
 import db.Database;
 import db.Highscore;
 
@@ -13,10 +14,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class GUI extends JFrame {
-    public static final int TILE_SIZE = 30;
-    public static final int GRID_SIZE = 30;
+    private final int TILE_SIZE = 30;
+    private final int GRID_SIZE = 30;
     private final int ROCK_COUNT = 15;
-    private final Snake snake = new Snake();
+    private final Snake snake = new Snake(GRID_SIZE, TILE_SIZE);
     private Food food;
     private final List<Rock> rocks = new ArrayList<>();
     private ImageIcon rockIcon;
@@ -110,7 +111,7 @@ public class GUI extends JFrame {
     public void openRestartDialog() {
         int option = JOptionPane.showOptionDialog(
                 this,
-                "Do you want to play again?",
+                "Would you like to play again?",
                 "Game Over",
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE,
@@ -119,11 +120,8 @@ public class GUI extends JFrame {
                 null
         );
 
-        if (option == JOptionPane.YES_OPTION) {
-            restartGame();
-        } else {
-            System.exit(0);
-        }
+        if (option == JOptionPane.YES_OPTION) restartGame();
+        else System.exit(0);
     }
 
     private void spawnFood() {

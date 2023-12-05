@@ -1,3 +1,5 @@
+package Sprites;
+
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import javax.swing.*;
@@ -11,11 +13,16 @@ public class Snake {
     private int direction;
     private ImageIcon headIcon;
     private ImageIcon bodyIcon;
+    private final int GRID_SIZE;
+    private final int TILE_SIZE;
 
-    public Snake() {
+    public Snake(final int gs, final int ts) {
+        this.GRID_SIZE = gs;
+        this.TILE_SIZE = ts;
+        
         body = new LinkedList<>();
-        body.add(new Point(GUI.GRID_SIZE / 2, GUI.GRID_SIZE / 2));
-        body.add(new Point((GUI.GRID_SIZE / 2) - 1, GUI.GRID_SIZE / 2));
+        body.add(new Point(GRID_SIZE / 2, GRID_SIZE / 2));
+        body.add(new Point((GRID_SIZE / 2) - 1, GRID_SIZE / 2));
         direction = KeyEvent.VK_D;
 
         try {
@@ -71,15 +78,15 @@ public class Snake {
 
     public boolean isOutOfBounds() {
         Point head = getHead();
-        return head.x < 0 || head.x >= GUI.GRID_SIZE || head.y < 0 || head.y >= GUI.GRID_SIZE;
+        return head.x < 0 || head.x >= GRID_SIZE || head.y < 0 || head.y >= GRID_SIZE;
     }
 
     public void draw(Graphics g) {
-        g.drawImage(headIcon.getImage(), getHead().x * GUI.TILE_SIZE, getHead().y * GUI.TILE_SIZE, GUI.TILE_SIZE, GUI.TILE_SIZE, null);
+        g.drawImage(headIcon.getImage(), getHead().x * TILE_SIZE, getHead().y * TILE_SIZE, TILE_SIZE, TILE_SIZE, null);
 
         for (int i = 1; i < body.size(); i++) {
             Point segment = body.get(i);
-            g.drawImage(bodyIcon.getImage(), segment.x * GUI.TILE_SIZE, segment.y * GUI.TILE_SIZE, GUI.TILE_SIZE, GUI.TILE_SIZE, null);
+            g.drawImage(bodyIcon.getImage(), segment.x * TILE_SIZE, segment.y * TILE_SIZE, TILE_SIZE, TILE_SIZE, null);
         }
     }
 
@@ -95,8 +102,8 @@ public class Snake {
 
     public void reset() {
         body.clear();
-        body.add(new Point(GUI.GRID_SIZE / 2, GUI.GRID_SIZE / 2));
-        body.add(new Point((GUI.GRID_SIZE / 2) - 1, GUI.GRID_SIZE / 2));
+        body.add(new Point(GRID_SIZE / 2, GRID_SIZE / 2));
+        body.add(new Point((GRID_SIZE / 2) - 1, GRID_SIZE / 2));
         direction = KeyEvent.VK_D;
     }
 }

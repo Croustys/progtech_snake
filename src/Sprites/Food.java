@@ -1,3 +1,5 @@
+package Sprites;
+
 import java.awt.*;
 
 public class Food extends Point {
