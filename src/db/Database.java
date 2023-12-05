@@ -38,24 +38,19 @@ public class Database {
      * @param playerName name of the player
      * @throws SQLException if a database access error occurs
      */
-    public void insertScore(String playerName, final int hs) throws SQLException {
+    public void insertOrUpdateScore(String playerName, final int hs) throws SQLException {
         try {
-            PreparedStatement selectPlayerID = this.connection.prepareStatement("SELECT id, score FROM highscores WHERE name = ?");
-            selectPlayerID.setString(1, playerName);
+            ResultSet result = selectUserByName(playerName);
 
-            ResultSet resultSet = selectPlayerID.executeQuery();
-            if (resultSet.next()) {
-                int id = resultSet.getInt(1);
-                int existingScore = resultSet.getInt(2);
+            if (result.next()) {
+                int id = result.getInt(1);
+                int existingScore = result.getInt(2);
 
                 if (hs > existingScore) {
                     updateScore(id, hs);
                 }
             } else {
-                PreparedStatement insertRecord = this.connection.prepareStatement("INSERT INTO highscores (name, score) VALUES (?, ?)");
-                insertRecord.setString(1, playerName);
-                insertRecord.setInt(2, hs);
-                insertRecord.executeUpdate();
+                insert(playerName, hs);
             }
 
             this.connection.commit();
@@ -87,13 +82,23 @@ public class Database {
      * @throws SQLException if updating the database caught an error
      */
     private void updateScore(final int id, final int hs) throws SQLException {
-        try {
-            PreparedStatement updateRecord = this.connection.prepareStatement("UPDATE highscores SET score = ? WHERE id = ?");
-            updateRecord.setInt(1, hs);
-            updateRecord.setInt(2, id);
-            updateRecord.executeUpdate();
-        }catch (SQLException e) {
-            Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, e);
-        }
+        PreparedStatement updateRecord = this.connection.prepareStatement("UPDATE highscores SET score = ? WHERE id = ?");
+        updateRecord.setInt(1, hs);
+        updateRecord.setInt(2, id);
+        updateRecord.executeUpdate();
+    }
+
+    private ResultSet selectUserByName(final String name) throws SQLException {
+        PreparedStatement selectPlayerID = this.connection.prepareStatement("SELECT id, score FROM highscores WHERE name = ?");
+        selectPlayerID.setString(1, name);
+
+        return selectPlayerID.executeQuery();
+    }
+    private void insert(final String name, final int hs) throws SQLException {
+        PreparedStatement insertRecord = this.connection.prepareStatement("INSERT INTO highscores (name, score) VALUES (?, ?)");
+        insertRecord.setString(1, name);
+        insertRecord.setInt(2, hs);
+
+        insertRecord.executeUpdate();
     }
 }

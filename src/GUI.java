@@ -174,7 +174,7 @@ public class GUI extends JFrame {
         if (playerName != null && !playerName.trim().isEmpty()) {
             try {
                 Database database = Database.instance();
-                database.insertScore(playerName, score);
+                database.insertOrUpdateScore(playerName, score);
             } catch (SQLException e) {
                 Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, e);
             }
