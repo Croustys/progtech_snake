@@ -91,6 +91,13 @@ public class GUI extends JFrame {
             highScoresFrame.add(scrollPane);
             highScoresFrame.setSize(700, 700);
             highScoresFrame.setLocationRelativeTo(this);
+            highScoresFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            highScoresFrame.addWindowListener(new java.awt.event.WindowAdapter() {
+                @Override
+                public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                    openRestartDialog();
+                }
+            });
 
             highScoresFrame.setVisible(true);
 
