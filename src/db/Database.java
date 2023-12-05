@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/** Singleton. Class responsible for connecting to the database and making queries. */
+/** Singleton. Class responsible for connecting to the database and making database operations. */
 public class Database {
     /** Singleton instance of the class. */
     private static Database instance;
@@ -36,9 +36,8 @@ public class Database {
     /**
      * Inserts the score of a player into the database. If the player already has a record increments their score by one.
      * @param playerName name of the player
-     * @throws SQLException if a database access error occurs
      */
-    public void insertOrUpdateScore(String playerName, final int hs) throws SQLException {
+    public void insertOrUpdateScore(String playerName, final int hs) {
         try {
             ResultSet result = selectUserByName(playerName);
 
@@ -88,12 +87,23 @@ public class Database {
         updateRecord.executeUpdate();
     }
 
+    /**
+     * @param name name of the player
+     * @return database rows that match the id of the name
+     * @throws SQLException if selecting rows from the database catches an error
+     */
     private ResultSet selectUserByName(final String name) throws SQLException {
         PreparedStatement selectPlayerID = this.connection.prepareStatement("SELECT id, score FROM highscores WHERE name = ?");
         selectPlayerID.setString(1, name);
 
         return selectPlayerID.executeQuery();
     }
+
+    /**
+     * @param name name of the player
+     * @param hs highscore of the player
+     * @throws SQLException throws if database couldn't insert record
+     */
     private void insert(final String name, final int hs) throws SQLException {
         PreparedStatement insertRecord = this.connection.prepareStatement("INSERT INTO highscores (name, score) VALUES (?, ?)");
         insertRecord.setString(1, name);
