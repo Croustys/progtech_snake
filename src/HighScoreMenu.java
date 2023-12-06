@@ -6,9 +6,9 @@ import java.awt.*;
 import java.util.List;
 
 public class HighScoreMenu extends JPanel {
-    private final GUI parent;
+    private final Game parent;
 
-    public HighScoreMenu(List<Highscore> highscores, GUI parent) {
+    public HighScoreMenu(List<Highscore> highscores, Game parent) {
         this.parent = parent;
         setLayout(new BorderLayout());
 

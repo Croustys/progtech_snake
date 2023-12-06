@@ -13,15 +13,13 @@ import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class GUI extends JFrame {
+public class Game extends JFrame {
     private final int TILE_SIZE = 30;
     private final int GRID_SIZE = 30;
     private final int ROCK_COUNT = 15;
     private final Snake snake = new Snake(GRID_SIZE, TILE_SIZE);
     private Food food;
     private final List<Rock> rocks = new ArrayList<>();
-    private ImageIcon rockIcon;
-    private ImageIcon foodIcon;
     private ImageIcon desertImage;
     private int score = 0;
     private int elapsedSeconds = 0;
@@ -29,7 +27,7 @@ public class GUI extends JFrame {
     private final Timer timer;
     private final Timer gameTimer;
 
-    public GUI() {
+    public Game() {
         setTitle("Snake");
         setSize(TILE_SIZE * GRID_SIZE + 50, TILE_SIZE * GRID_SIZE + 50);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -39,11 +37,9 @@ public class GUI extends JFrame {
         setContentPane(gamePanel);
 
         try {
-            foodIcon = new ImageIcon("media/food.jpg");
-            rockIcon  = new ImageIcon("media/rock.jpg");
             desertImage = new ImageIcon("media/desert.png");
         } catch (Exception e) {
-            Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, e);
+            Logger.getLogger(Game.class.getName()).log(Level.SEVERE, null, e);
         }
 
         spawnFood();
@@ -132,7 +128,7 @@ public class GUI extends JFrame {
             y = random.nextInt(GRID_SIZE);
         } while (snake.contains(x, y) || rockExists(x, y));
 
-        food = new Food(x, y);
+        food = new Food(x, y, TILE_SIZE);
     }
 
     private void spawnRocks() {
@@ -142,15 +138,15 @@ public class GUI extends JFrame {
             do {
                 x = random.nextInt(GRID_SIZE);
                 y = random.nextInt(GRID_SIZE);
-            } while (snake.contains(x, y) || rockExists(x, y) || food.equals(new Point(x, y)));
+            } while (snake.contains(x, y) || rockExists(x, y) || food.getPosition().equals(new Point(x, y)));
 
-            rocks.add(new Rock(x, y));
+            rocks.add(new Rock(x, y, TILE_SIZE));
         }
     }
 
     private boolean rockExists(int x, int y) {
-        for (Point rock : rocks) {
-            if (rock.equals(new Point(x, y))) {
+        for (Rock rock : rocks) {
+            if (rock.getPosition().equals(new Point(x, y))) {
                 return true;
             }
         }
@@ -158,7 +154,7 @@ public class GUI extends JFrame {
     }
 
     private void checkCollision() {
-        if (snake.getHead().equals(food)) {
+        if (snake.getHead().equals(food.getPosition())) {
             snake.grow();
             spawnFood();
             score++;
@@ -198,14 +194,12 @@ public class GUI extends JFrame {
 
             // Draw the desert background image
             g.drawImage(desertImage.getImage(), 0, 0, getWidth(), getHeight(), this);
+
             snake.draw(g);
+            food.draw(g);
 
-            // Draw the food image
-            g.drawImage(foodIcon.getImage(), food.x * TILE_SIZE, food.y * TILE_SIZE, TILE_SIZE, TILE_SIZE, this);
-
-            // Draw the rocks
-            for (Point rock : rocks) {
-                g.drawImage(rockIcon.getImage(), rock.x * TILE_SIZE, rock.y * TILE_SIZE, TILE_SIZE, TILE_SIZE, this);
+            for (Rock rock : rocks) {
+                rock.draw(g);
             }
 
             // Draw the elapsed time on the screen

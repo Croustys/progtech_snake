@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Snake {
+public class Snake extends Sprite {
     private final LinkedList<Point> body;
     private int direction;
     private ImageIcon headIcon;
@@ -17,6 +17,7 @@ public class Snake {
     private final int TILE_SIZE;
 
     public Snake(final int gs, final int ts) {
+        super(gs / 2, gs / 2, ts);
         this.GRID_SIZE = gs;
         this.TILE_SIZE = ts;
         
@@ -92,8 +93,8 @@ public class Snake {
 
     public boolean collidesWithRock(List<Rock> rocks) {
         Point head = getHead();
-        for (Point rock : rocks) {
-            if (head.equals(rock)) {
+        for (Rock rock : rocks) {
+            if (head.equals(rock.getPosition())) {
                 return true;
             }
         }
