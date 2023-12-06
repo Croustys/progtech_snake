@@ -8,14 +8,39 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Main character class of the game
+ */
 public class Snake extends Sprite {
+    /**
+     * body of the snake
+     */
     private final LinkedList<Point> body;
+    /**
+     * direction of the snakes movement
+     */
     private int direction;
+    /**
+     * head icon
+     */
     private ImageIcon headIcon;
+    /**
+     * body icon
+     */
     private ImageIcon bodyIcon;
+    /**
+     * global grid size
+     */
     private final int GRID_SIZE;
+    /**
+     * global tile size
+     */
     private final int TILE_SIZE;
 
+    /**
+     * @param gs GRID_SIZE
+     * @param ts TILE_SIZE
+     */
     public Snake(final int gs, final int ts) {
         super(gs / 2, gs / 2, ts);
         this.GRID_SIZE = gs;
@@ -35,10 +60,16 @@ public class Snake extends Sprite {
         }
     }
 
+    /**
+     * @return the head of the snake
+     */
     public Point getHead() {
         return body.getFirst();
     }
 
+    /**
+     * moves the snake in the correct direction
+     */
     public void move() {
         Point newHead = getHead();
         newHead = switch (direction) {
@@ -54,20 +85,34 @@ public class Snake extends Sprite {
         }
     }
 
+    /**
+     * @param newDirection of the snake's movement
+     */
     public void setDirection(int newDirection) {
         if (Math.abs(newDirection - direction) != 180) {
             direction = newDirection;
         }
     }
 
+    /**
+     * @param x coordinate
+     * @param y coordinate
+     * @return true if body touches point
+     */
     public boolean contains(int x, int y) {
         return body.contains(new Point(x, y));
     }
 
+    /**
+     * grows the snake
+     */
     public void grow() {
         body.addLast(new Point(-1, -1));
     }
 
+    /**
+     * @return true if head touches the snake's body
+     */
     public boolean collidesWithSelf() {
         for (int i = 1; i < body.size(); i++) {
             if (getHead().equals(body.get(i))) {
@@ -77,11 +122,17 @@ public class Snake extends Sprite {
         return false;
     }
 
+    /**
+     * @return true if snake tries to escape the map
+     */
     public boolean isOutOfBounds() {
         Point head = getHead();
         return head.x < 0 || head.x >= GRID_SIZE || head.y < 0 || head.y >= GRID_SIZE;
     }
 
+    /**
+     * @param g Graphics, used for drawing the sprite
+     */
     public void draw(Graphics g) {
         g.drawImage(headIcon.getImage(), getHead().x * TILE_SIZE, getHead().y * TILE_SIZE, TILE_SIZE, TILE_SIZE, null);
 
@@ -91,6 +142,10 @@ public class Snake extends Sprite {
         }
     }
 
+    /**
+     * @param rocks list of rocks on map
+     * @return true if head touches any of the rocks
+     */
     public boolean collidesWithRock(List<Rock> rocks) {
         Point head = getHead();
         for (Rock rock : rocks) {
@@ -101,6 +156,10 @@ public class Snake extends Sprite {
         return false;
     }
 
+    /**
+     * resets the position of the snake and direction
+     * sets body length to default
+     */
     public void reset() {
         body.clear();
         body.add(new Point(GRID_SIZE / 2, GRID_SIZE / 2));

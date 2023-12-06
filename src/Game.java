@@ -13,20 +13,62 @@ import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * GUI & Logic class of the game
+ */
 public class Game extends JFrame {
+    /**
+     * size of each tile on the map
+     */
     private final int TILE_SIZE = 30;
+    /**
+     * size of the map's grid
+     */
     private final int GRID_SIZE = 30;
+    /**
+     * count of the rocks to be randomly placed on the map
+     */
     private final int ROCK_COUNT = 15;
+    /**
+     * main character of the game, snake
+     */
     private final Snake snake = new Snake(GRID_SIZE, TILE_SIZE);
+    /**
+     * Food which the snake can gather & eat to gain points
+     */
     private Food food;
+    /**
+     * the rocks on the map, that could end the game upon the snake's touch
+     */
     private final List<Rock> rocks = new ArrayList<>();
+    /**
+     * background image
+     */
     private ImageIcon desertImage;
+    /**
+     * score of the player
+     */
     private int score = 0;
+    /**
+     * timer of how long the game has been actively played
+     */
     private int elapsedSeconds = 0;
+    /**
+     * panel used for drawing
+     */
     private final GamePanel gamePanel;
+    /**
+     * timer that keeps track of elapsed seconds
+     */
     private final Timer timer;
+    /**
+     * timer that rerenders the game, affects the speed of the snake
+     */
     private final Timer gameTimer;
 
+    /**
+     * constructor
+     */
     public Game() {
         setTitle("Snake");
         setSize(TILE_SIZE * GRID_SIZE + 50, TILE_SIZE * GRID_SIZE + 50);
@@ -73,6 +115,9 @@ public class Game extends JFrame {
         requestFocus();
     }
 
+    /**
+     * method used for stopping the game and displaying highscore frame
+     */
     private void displayHighscores() {
         timer.stop();
         gameTimer.stop();
@@ -104,6 +149,9 @@ public class Game extends JFrame {
         }
     }
 
+    /**
+     * method used for dialog with player for replaying the game
+     */
     public void openRestartDialog() {
         int option = JOptionPane.showOptionDialog(
                 this,
@@ -120,6 +168,10 @@ public class Game extends JFrame {
         else System.exit(0);
     }
 
+    /**
+     * method used for spawning food on the map
+     * can't be on the snake, or on any of the rocks
+     */
     private void spawnFood() {
         Random random = new Random();
         int x, y;
@@ -131,6 +183,9 @@ public class Game extends JFrame {
         food = new Food(x, y, TILE_SIZE);
     }
 
+    /**
+     * spawns rocks at the start of the game
+     */
     private void spawnRocks() {
         Random random = new Random();
         for (int i = 0; i < ROCK_COUNT; i++) {
@@ -144,6 +199,12 @@ public class Game extends JFrame {
         }
     }
 
+    /**
+     * used for checking if a rock exists on a point
+     * @param x coordinate
+     * @param y coordinate
+     * @return true if rock already exists in the specific point on the map
+     */
     private boolean rockExists(int x, int y) {
         for (Rock rock : rocks) {
             if (rock.getPosition().equals(new Point(x, y))) {
@@ -153,6 +214,11 @@ public class Game extends JFrame {
         return false;
     }
 
+    /**
+     * checks if snake touched a sprite
+     * if touched sprite was food, grows the snake, and spawns new food while increasing score
+     * otherwise ends game
+     */
     private void checkCollision() {
         if (snake.getHead().equals(food.getPosition())) {
             snake.grow();
@@ -163,6 +229,10 @@ public class Game extends JFrame {
         }
     }
 
+    /**
+     * handle's game over dialog
+     * asks for player's name and opens highscore menu
+     */
     private void handleGameOver() {
         String playerName = JOptionPane.showInputDialog(this, "Game Over\nYour Score: " + score + "\nEnter your name:");
         if (playerName != null && !playerName.trim().isEmpty()) {
@@ -176,6 +246,9 @@ public class Game extends JFrame {
         this.displayHighscores();
     }
 
+    /**
+     * resets all necessary values, to restart the game
+     */
     private void restartGame() {
         elapsedSeconds = 0;
         snake.reset();
@@ -187,6 +260,9 @@ public class Game extends JFrame {
         gameTimer.start();
     }
 
+    /**
+     * JPanel used for drawing on the frame
+     */
     private class GamePanel extends JPanel {
         @Override
         protected void paintComponent(Graphics g) {
