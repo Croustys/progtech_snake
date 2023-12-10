@@ -2,8 +2,6 @@ package db;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /** Singleton. Class responsible for connecting to the database and making database operations. */
 public class Database {
@@ -37,8 +35,7 @@ public class Database {
      * Inserts the score of a player into the database. If the player already has a record increments their score by one.
      * @param playerName name of the player
      */
-    public void insertOrUpdateScore(String playerName, final int hs) {
-        try {
+    public void insertOrUpdateScore(String playerName, final int hs) throws SQLException {
             ResultSet result = selectUserByName(playerName);
 
             if (result.next()) {
@@ -53,9 +50,6 @@ public class Database {
             }
 
             this.connection.commit();
-        } catch (SQLException e) {
-            Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, e);
-        }
     }
 
     /**

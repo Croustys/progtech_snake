@@ -133,6 +133,7 @@ public class Snake extends Sprite {
     /**
      * @param g Graphics, used for drawing the sprite
      */
+    @Override
     public void draw(Graphics g) {
         g.drawImage(headIcon.getImage(), getHead().x * TILE_SIZE, getHead().y * TILE_SIZE, TILE_SIZE, TILE_SIZE, null);
 

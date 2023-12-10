@@ -125,7 +125,7 @@ public class Game extends JFrame {
             Database database = Database.instance();
             List<Highscore> highscores = database.getTopScores();
 
-            JFrame highScoresFrame = new JFrame("Highscores");
+            JFrame highScoresFrame = new JFrame("Top 10 highscores");
 
             HighScoreMenu highScoresPanel = new HighScoreMenu(highscores, this);
             JScrollPane scrollPane = new JScrollPane(highScoresPanel);
@@ -241,6 +241,7 @@ public class Game extends JFrame {
                 database.insertOrUpdateScore(playerName, score);
             } catch (SQLException e) {
                 Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, e);
+                JOptionPane.showMessageDialog(this, "Error inserting record.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
         this.displayHighscores();
